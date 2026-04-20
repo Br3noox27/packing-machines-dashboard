@@ -58,7 +58,7 @@ operação em ~2 anos.
 ![Desempenho](docs/screenshots/08-dashboard-desempenho-light.png)
 
 ### Máquinas críticas — detalhamento de BOs
-![Máquinas com BO](docs/screenshots/03-maquinas-criticas.png)
+![Máquinas com BO](docs/screenshots/03-maquinas-criticas.png) ![Máquinas com BO Black](docs/screenshots/graficblack.png)  
 
 ### Modal de detalhes por máquina
 ![Modal](docs/screenshots/04-modal-maquinas-problemas.png)
@@ -66,7 +66,7 @@ operação em ~2 anos.
 ### Modo escuro — otimizado para ambiente industrial
 | Light Mode | Dark Mode |
 |------------|-----------|
-| ![Light](docs/screenshots/02-dashboard-desempenho-light.png) | ![Dark](docs/screenshots/06-dark-mode.png) |
+| ![Light](docs/screenshots/02-dashboard-desempenho-light.png) | ![Dark](docs/screenshots/modoblack.png) |
 
 ---
 
