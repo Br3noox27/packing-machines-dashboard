@@ -219,7 +219,7 @@ Desenvolvedor Python · Análise e Desenvolvimento de Sistemas @ FIAP
 
 - 💼 [LinkedIn](https://linkedin.com/in/breno-laurentino/)
 - 🐙 [GitHub](https://github.com/Br3noox27)
-- 📧 [seu email profissional aqui]
+- 📧 brenolaurentino008@gmail.com
 
 ---
 
