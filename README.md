@@ -52,7 +52,7 @@ operação em ~2 anos.
 ## 🎬 Demonstração
 
 ### Tela principal — PMs (light mode)
-![Dashboard PMs](docs/screenshots/01-dashboard-pms-light.png)
+![Dashboard PMs](docs/screenshots/02-dashboard-desempenho-light.png)
 
 ### Aba de Desempenho — análises históricas
 ![Desempenho](docs/screenshots/08-dashboard-desempenho-light.png)
