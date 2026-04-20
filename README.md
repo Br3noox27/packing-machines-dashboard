@@ -1,106 +1,13 @@
-=====================================================
-
-# Packing Machines Dashboard
-
-> Sistema web de monitoramento em tempo real das inspeções de PMs 
-> (Preventive Maintenances) de máquinas de embalagem. Construído pra 
-> resolver uma dor real da operação e implantado na linha de produção 
-> de um centro de distribuição do Mercado Livre.
-
-![Status](https://img.shields.io/badge/status-em_produção-success)
-![Frontend](https://img.shields.io/badge/frontend-HTML%20%7C%20CSS%20%7C%20JS-yellow)
-![Backend](https://img.shields.io/badge/backend-Google_Apps_Script-blue)
-![Charts](https://img.shields.io/badge/charts-Chart.js-ff6384)
-
-<p align="center">
-  <img src="docs/screenshots/demo.gif" alt="Dashboard em funcionamento" width="900">
-</p>
-
----
-
-## 📍 Contexto
-
-Construído durante meu trabalho como terceirizado na equipe de manutenção 
-de um centro de distribuição do Mercado Livre. 
-
-O líder pediu uma planilha pra organizar inspeções de máquinas. Fui além 
-do pedido: transformei a planilha num sistema web completo de monitoramento 
-em tempo real — fim a fim, sozinho, em ~2 semanas.
-
-**Em uso diário pela equipe de manutenção desde março/2026.**  
-Primeira ferramenta digital de controle de manutenção adotada naquela 
-operação em ~2 anos.
-
----
-
-## 📊 Impacto
-
-- 🏭 **12 máquinas de embalagem** monitoradas em tempo real
-- 👥 Utilizado em **todos os 4 turnos** da operação
-- 📝 **24 inspeções/dia** em média, 2 por máquina por turno (início + final)
-- 📈 **77% de conformidade geral** mantida (meta: 70%)
-- 📧 Relatório automático por email toda **segunda-feira** para supervisores 
-  e líderes
-- 🔍 Identificação imediata de máquinas problemáticas: antes dependia de 
-  compilação manual, hoje é visível em tempo real
-- 🛠 Permite **manutenção preditiva** ao invés de só corretiva — 
-  parâmetros alterados são detectados antes de virarem parada de máquina
-- 💰 **Zero custo de licença** (substituiu a necessidade de CMMS pago)
-
----
-
-## 🎬 Demonstração
-
-### Tela principal — PMs (light mode)
-![Dashboard PMs](docs/screenshots/02-dashboard-desempenho-light.png)
-
-### Aba de Desempenho — análises históricas
-![Desempenho](docs/screenshots/08-dashboard-desempenho-light.png)
-
-### Máquinas críticas — detalhamento de BOs
-![Máquinas com BO](docs/screenshots/03-maquinas-criticas.png) ![Máquinas com BO Black](docs/screenshots/graficblack.png)  
-
-### Modal de detalhes por máquina
-![Modal](docs/screenshots/04-modal-maquinas-problemas.png)
-
-### Modo escuro — otimizado para ambiente industrial
-| Light Mode | Dark Mode |
-|------------|-----------|
-| ![Light](docs/screenshots/02-dashboard-desempenho-light.png) | ![Dark](docs/screenshots/modoblack.png) |
-
----
-
-## 🧩 O problema
-
-A operação tinha **12 máquinas de embalagem** rodando em **4 turnos**, 
-sem nenhum sistema digital de controle de manutenção preventiva. 
-
-Sintomas do problema antes do sistema:
-
-- Não havia visibilidade de quais máquinas estavam operando fora de 
-  parâmetro
-- Alterações de configuração feitas em uma máquina por um turno não 
-  eram registradas — e o turno seguinte não sabia o que tinha mudado
-- Supervisores não tinham dados pra justificar solicitações de 
-  manutenção ou peça
-- Manutenção era 100% reativa: só olhava pra máquina quando ela quebrava
-
----
-
-## 💡 A solução
-
-Dashboard web conectado a um fluxo de dados automático:
-
 1. Técnico de manutenção abre o **Google Forms** no celular no início 
    e no final do turno
-2. Registra status de cada parâmetro da máquina (temperatura selagem, 
+2. Registra o status de cada parâmetro da máquina (temperatura de selagem, 
    velocidade da esteira, pressão do cilindro, altura do corte, teflon 
    seladora, teflon barra, sensor)
 3. Dados alimentam automaticamente um **Google Sheets**
 4. **Google Apps Script** expõe os dados como API
 5. **Dashboard** atualiza automaticamente a cada **5 minutos**
 6. Supervisores e líderes recebem **email automático toda segunda-feira** 
-   com resumo da semana
+   com o resumo da semana
 
 ---
 
@@ -131,8 +38,8 @@ de alternativa:
   então não passei por aprovação de ferramenta nova (que travaria o 
   projeto por semanas)
 - **Entrega em ~2 semanas**: MVP em produção rápido valia mais que 
-  arquitetura ideal. Validar que a equipe ia **usar** era mais 
-  importante que a stack
+  arquitetura ideal. Validar que a equipe ia **usar** era mais importante 
+  que a stack
 - **Manutenção simples**: se eu sair, qualquer pessoa com conhecimento 
   básico de Apps Script consegue dar continuidade
 
@@ -172,7 +79,7 @@ ou centenas de máquinas, a v2 em FastAPI + PostgreSQL já está planejada.
 **UX industrial**
 - Dark mode completo (otimizado pra galpões com iluminação variável)
 - Responsivo (desktop e mobile)
-- Tipografia e contraste pensados pra leitura em distância
+- Tipografia e contraste pensados pra leitura à distância
 
 **Automação**
 - Email semanal automático com resumo consolidado para supervisores 
@@ -182,19 +89,18 @@ ou centenas de máquinas, a v2 em FastAPI + PostgreSQL já está planejada.
 
 ## ⚠️ Limitações conhecidas
 
-Transparente sobre o que a stack atual **não resolve**:
+Sendo transparente sobre o que a stack atual **não resolve**:
 
 - **Escalabilidade**: Google Sheets suporta ~50k linhas bem. Com ~24 
-  registros/dia, isso dá uns ~5 anos de dados. Pra mais que isso, 
-  precisa migrar pra banco relacional.
+  registros/dia, isso dá ~5 anos de dados. Pra mais que isso, precisa 
+  migrar pra banco relacional.
 - **Autenticação granular**: todo mundo com o link tem o mesmo nível 
   de acesso. Sem perfis diferenciados (técnico vs supervisor vs gestor).
 - **Sem API pública**: integração com outros sistemas da operação 
-  exigiria trabalho no Apps Script.
+  exigiria trabalho adicional no Apps Script.
 - **Dependência do Google Workspace**: mudar de ecossistema demandaria 
   reescrita.
-- **Pode ficar lento** se o volume de dados crescer muito além da 
-  escala atual.
+- **Pode ficar lento** se o volume de dados crescer muito além da escala atual.
 
 ---
 
@@ -226,7 +132,5 @@ Desenvolvedor Python · Análise e Desenvolvimento de Sistemas @ FIAP
 ## 🙏 Agradecimentos
 
 Ao líder da equipe de manutenção que pediu a ferramenta e deu liberdade 
-pra expandir o escopo original, e à equipe de técnicos que usa o 
-sistema no dia a dia e deu feedback constante durante o desenvolvimento.
-
-=====================================================
+pra expandir o escopo original, e à equipe de técnicos que usa o sistema 
+no dia a dia e deu feedback constante durante o desenvolvimento.
