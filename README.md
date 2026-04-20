@@ -2,6 +2,12 @@
 
 > Sistema web de monitoramento em tempo real de máquinas de embalagem, integrado ao Google Sheets via Apps Script.
 
+Sistema de gestão de manutenção de máquinas de embalagem, 
+construído para resolver uma dor real na operação e implantado 
+em centro de distribuição do Mercado Livre.
+
+Em uso diário pela equipe de manutenção desde [03/26].
+
 ---
 
 ## 🇧🇷 Português
