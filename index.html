@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Packing Machines</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: {} }
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100 dark:bg-[#0f0f0f] text-gray-800 dark:text-gray-100 min-h-screen overflow-x-hidden transition-colors duration-300">
+
+<!-- HEADER -->
+<div class="ml-header-bg bg-[#fff159] dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-700 shadow-sm transition-colors duration-300">
+  <div class="max-w-[1100px] mx-auto px-4 py-[14px]">
+    <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
+      <div class="flex items-center justify-start">
+        <img src="https://bring.com.br/blog/wp-content/uploads/2018/05/Mercado-Livre-logo.png" alt="Mercado Livre" class="w-[110px] h-auto max-[600px]:w-[80px]">
+      </div>
+      <div class="flex flex-col items-center justify-center">
+        <div class="text-[22px] font-bold text-gray-800 dark:text-white tracking-tight text-center max-[600px]:text-[16px]">Packing Machines</div>
+        <div class="text-[12px] text-gray-500 dark:text-gray-400 mt-[3px] text-center" id="data-hoje"></div>
+      </div>
+      <div class="flex justify-end items-center">
+        <button class="bg-black/10 dark:bg-white/10 hover:bg-black/[0.18] dark:hover:bg-white/[0.18] border-none rounded-full px-4 py-2 text-[13px] font-medium text-gray-800 dark:text-gray-100 cursor-pointer flex items-center gap-[6px] transition-all duration-200" onclick="window.toggleDark()" id="dark-btn">🌙 Escuro</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div id="nav-tabs" class="flex justify-center bg-gray-100 dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-700 transition-colors duration-300">
+  <button class="tab active" onclick="window.setTab('pms', this)">PMs</button>
+  <button class="tab" onclick="window.setTab('desempenho', this)">Desempenho</button>
+</div>
+
+<!-- CONTEÚDO -->
+<div id="main-content" class="max-w-[1100px] mx-auto px-3 py-[15px]">
+
+  <!-- ABA: PMs -->
+  <div id="tab-pms">
+    <div class="filter-row flex gap-2 mb-[6px] flex-wrap mt-1 relative items-center">
+      <button class="f-btn active" id="fb-hoje"   onclick="window.setFiltro('hoje',this)">Hoje</button>
+      <button class="f-btn"        id="fb-ontem"  onclick="window.setFiltro('ontem',this)">Ontem</button>
+      <button class="f-btn"        id="fb-periodo" onclick="window.togglePeriodoPicker(this)">Escolher período ▾</button>
+      <!-- POPOVER DE PERÍODO -->
+      <div id="periodo-picker" style="display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:200;background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:18px 20px;min-width:280px;">
+        <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Dia específico</div>
+        <input type="date" id="pp-dia" min="2020-01-01" max="2099-12-31" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;outline:none;margin-bottom:14px;box-sizing:border-box;" onchange="window.setPeriodoDia()">
+        <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Mês inteiro</div>
+        <div style="display:flex;gap:8px;">
+          <select id="pp-mes" style="flex:1;padding:9px 10px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;outline:none;" onchange="window.setPeriodoMes()">
+            <option value="">Mês</option>
+            <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+            <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+            <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+            <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+          </select>
+          <select id="pp-ano" style="width:90px;padding:9px 10px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;outline:none;" onchange="window.setPeriodoMes()">
+          </select>
+        </div>
+        <button onclick="window.clearPeriodo()" style="margin-top:14px;width:100%;padding:9px;border-radius:8px;border:1px solid #ddd;background:#f5f5f5;font-size:12px;font-family:inherit;cursor:pointer;color:#888;font-weight:600;">Limpar / Voltar para Hoje</button>
+      </div>
+    </div>
+    <!-- KPIs + mini gráfico de evolução -->
+    <div class="kpi-section grid gap-[14px] mb-5 items-center" style="grid-template-columns:repeat(3,minmax(0,1fr)) 2fr;">
+      <div class="kpi-row contents" id="kpi-row"><div class="text-center py-[60px] text-gray-400 text-sm italic">Carregando dados...</div></div>
+      <div class="chart-card kpi-evol-mini bg-white dark:bg-[#111] rounded-2xl border border-black/[0.07] dark:border-white/[0.06] shadow-sm p-5 transition-colors duration-300" id="kpi-evol-mini-card">
+        <div class="kpi-evol-mini-header">
+          <div class="kpi-evol-mini-title">Conformidade</div>
+          <div class="kpi-evol-mini-badge" id="kpi-mini-badge"></div>
+        </div>
+        <div class="kpi-evol-mini-val" id="kpi-mini-val">—</div>
+        <div class="kpi-evol-mini-chart"><canvas id="kpi-mini-chart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Label identificação dos gráficos -->
+    <div class="text-[11px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-[.08em] mb-3" id="pm-section-label">Inspeções do dia</div>
+
+    <!-- BOs DO DIA -->
+    <div style="margin-top:6px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:11px;font-weight:700;color:#aaa;letter-spacing:.06em;text-transform:uppercase;" id="pm-bo-label">Máquinas com Problemas — Hoje</div>
+        <button id="pm-bo-ver-mais" onclick="window.irParaDesempenho()" style="background:none;border:1px solid rgba(0,0,0,0.12);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:#555;cursor:pointer;transition:background 0.2s;">Ver todas (12) →</button>
+      </div>
+      <div id="pm-bo-top3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;"></div>
+      <div id="pm-bo-empty" style="display:none;padding:32px;text-align:center;color:#bbb;font-size:13px;">Nenhuma ocorrência neste período ✓</div>
+      <div id="pm-bo-top3-probs" style="display:none;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+        <div class="chart-card bg-white dark:bg-[#111] rounded-2xl border border-black/[0.07] dark:border-white/[0.06] shadow-sm transition-colors duration-300" style="padding:18px 20px;">
+          <div style="font-size:11px;font-weight:700;color:#aaa;letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;">Parâmetros com Erros</div>
+          <div style="height:220px;position:relative;"><canvas id="pm-params-pie"></canvas></div>
+        </div>
+        <div class="chart-card bg-white dark:bg-[#111] rounded-2xl border border-black/[0.07] dark:border-white/[0.06] shadow-sm transition-colors duration-300" style="padding:18px 20px;">
+          <div style="font-size:11px;font-weight:700;color:#aaa;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;">Top 3 Problemas</div>
+          <div id="pm-top3-bars"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA: Desempenho -->
+  <div id="tab-desempenho" style="display:none;">
+
+    <!-- STRIP DE MÁQUINAS -->
+    <div class="flex items-center justify-between mt-5 mb-[10px]" style="flex-wrap:wrap;gap:8px;">
+      <div>
+        <div class="text-[11px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-[.08em]">Problemas das máquinas</div>
+        <div id="strip-filtro-label" style="font-size:10px;color:#bbb;margin-top:2px;">Hoje</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;position:relative;flex-wrap:wrap;">
+        <button class="f-btn active" id="df-hoje"    onclick="window.setFiltroDesemp('hoje',this)"    style="padding:5px 12px;font-size:11px;">Hoje</button>
+        <button class="f-btn"        id="df-geral"   onclick="window.setFiltroDesemp('geral',this)"   style="padding:5px 12px;font-size:11px;">Geral</button>
+        <button class="f-btn"        id="df-periodo" onclick="window.togglePeriodoPickerD(this)"       style="padding:5px 12px;font-size:11px;">Período ▾</button>
+        <button class="f-btn"        id="btn-ver-todas" onclick="window.toggleVerTodas()"             style="padding:5px 12px;font-size:11px;">Ver todas ▾</button>
+        <!-- POPOVER DE PERÍODO (Desempenho) -->
+        <div id="periodo-picker-d" style="display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:200;background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:18px 20px;min-width:280px;">
+          <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">Dia específico</div>
+          <input type="date" id="dp-dia" min="2020-01-01" max="2099-12-31" style="width:100%;padding:9px 12px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;outline:none;margin-bottom:14px;box-sizing:border-box;" onchange="window.setPeriodoDiaD()">
+          <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Mês inteiro</div>
+          <div style="display:flex;gap:8px;">
+            <select id="dp-mes" style="flex:1;padding:9px 10px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;outline:none;" onchange="window.setPeriodoMesD()">
+              <option value="">Mês</option>
+              <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+              <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+              <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+              <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+            </select>
+            <select id="dp-ano" style="width:90px;padding:9px 10px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;outline:none;" onchange="window.setPeriodoMesD()"></select>
+          </div>
+          <button onclick="window.clearPeriodoD()" style="margin-top:14px;width:100%;padding:9px;border-radius:8px;border:1px solid #ddd;background:#f5f5f5;font-size:12px;font-family:inherit;cursor:pointer;color:#888;font-weight:600;">Limpar / Voltar para Hoje</button>
+        </div>
+      </div>
+    </div>
+    <div class="grid mb-5" style="grid-template-columns:repeat(4,1fr);gap:10px;" id="desemp-strip">
+      <div class="text-center text-gray-400 text-sm italic py-5" style="grid-column:1/-1;">Carregando...</div>
+    </div>
+
+    <!-- BOTÃO VER MAIS GRÁFICOS -->
+    <div style="margin-bottom:14px;">
+      <button class="f-btn" onclick="window.toggleMaisGraficos()" id="btn-mais-graficos">
+        📊 Ver análise detalhada
+      </button>
+    </div>
+
+    <!-- GRÁFICOS 2x2 -->
+    <div class="desemp-charts-2col grid gap-[14px] mt-2" style="grid-template-columns:1fr 1fr;">
+
+      <!-- 1: Conformidade Geral -->
+      <div class="desemp-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+          <div>
+            <div class="desemp-card-title" style="margin-bottom:2px;">Conformidade Geral</div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:22px;font-weight:700;color:#111;" id="pm-evol-val">—</span>
+              <span class="pm-evolution-badge" id="pm-evol-badge"></span>
+            </div>
+          </div>
+        </div>
+        <div class="desemp-chart-wrap"><canvas id="pm-evol-chart"></canvas></div>
+      </div>
+
+      <!-- 2: PMs com Mais Problemas -->
+      <div class="desemp-card">
+        <div class="desemp-card-title">PMs com Mais Problemas</div>
+        <div class="desemp-chart-wrap"><canvas id="d-problemas"></canvas></div>
+      </div>
+
+      <!-- 3: Tipos de Defeito -->
+      <div class="desemp-card">
+        <div class="desemp-card-title">Tipos de Defeito (Pareto)</div>
+        <div class="desemp-chart-wrap"><canvas id="d-pareto"></canvas></div>
+      </div>
+
+      <!-- 4: Parâmetros com Mais Erros -->
+      <div class="desemp-card">
+        <div class="desemp-card-title">Parâmetros com Mais Erros</div>
+        <div class="desemp-chart-wrap"><canvas id="d-params"></canvas></div>
+      </div>
+
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- TELA: TODAS AS MÁQUINAS -->
+<div id="page-todas-maquinas" style="display:none;">
+  <div style="position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid rgba(0,0,0,0.07);padding:0 20px;display:flex;align-items:center;gap:16px;height:56px;box-shadow:0 1px 8px rgba(0,0,0,0.06);" class="dark:bg-[#141414] dark:border-gray-800 transition-colors duration-300">
+    <button onclick="window.voltarDeTodasMaquinas()" title="Voltar"
+      style="width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(0,0,0,0.12);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#555;transition:all .18s;flex-shrink:0;"
+      class="dark:border-gray-600 dark:text-gray-300"
+      onmouseover="this.style.background='rgba(0,0,0,0.06)'" onmouseout="this.style.background='none'">‹</button>
+    <div style="font-size:15px;font-weight:700;color:#111;letter-spacing:-.01em;" class="dark:text-white">Status das Máquinas</div>
+    <div style="display:flex;gap:6px;margin-left:16px;">
+      <button class="f-btn active" id="tm-f-todos"  onclick="window.filtrarTodasMaquinas('todos',this)"  style="padding:4px 12px;font-size:11px;">Todas</button>
+      <button class="f-btn"        id="tm-f-if21"   onclick="window.filtrarTodasMaquinas('IF21',this)"   style="padding:4px 12px;font-size:11px;">Infeed 21</button>
+      <button class="f-btn"        id="tm-f-if22"   onclick="window.filtrarTodasMaquinas('IF22',this)"   style="padding:4px 12px;font-size:11px;">Infeed 22</button>
+    </div>
+    <div style="margin-left:auto;font-size:12px;color:#888;" id="todas-maquinas-count"></div>
+  </div>
+  <div class="max-w-[1100px] mx-auto px-3 py-5">
+    <div id="todas-maquinas-grid" class="grid gap-[15px]" style="grid-template-columns:repeat(3,1fr);"></div>
+  </div>
+</div>
+
+<!-- TELA: ANÁLISE DETALHADA -->
+<div id="page-analise" style="display:none;">
+  <!-- Header moderno -->
+  <div style="position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid rgba(0,0,0,0.07);padding:0 20px;display:flex;align-items:center;gap:16px;height:56px;box-shadow:0 1px 8px rgba(0,0,0,0.06);" class="dark:bg-[#141414] dark:border-gray-800 transition-colors duration-300">
+    <!-- Botão voltar redondo -->
+    <button onclick="window.voltarDashboard()" title="Voltar"
+      style="width:34px;height:34px;border-radius:50%;border:1.5px solid rgba(0,0,0,0.12);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:#555;transition:all .18s;flex-shrink:0;"
+      class="dark:border-gray-600 dark:text-gray-300"
+      onmouseover="this.style.background='rgba(0,0,0,0.06)'" onmouseout="this.style.background='none'">
+      ‹
+    </button>
+    <!-- Título -->
+    <div style="font-size:15px;font-weight:700;color:#111;letter-spacing:-.01em;" class="dark:text-white">Análise Detalhada</div>
+    <!-- Filtros à direita -->
+    <div style="margin-left:auto;display:flex;gap:6px;align-items:center;position:relative;flex-wrap:wrap;">
+      <div style="display:flex;gap:4px;border-right:1px solid rgba(128,128,128,0.2);padding-right:10px;margin-right:4px;">
+        <button class="f-btn active" id="an-line-todos" onclick="window.setFiltroAnLine('todos',this)" style="padding:5px 11px;font-size:11px;">Todas</button>
+        <button class="f-btn"        id="an-line-if21"  onclick="window.setFiltroAnLine('IF21',this)"  style="padding:5px 11px;font-size:11px;">Infeed 21</button>
+        <button class="f-btn"        id="an-line-if22"  onclick="window.setFiltroAnLine('IF22',this)"  style="padding:5px 11px;font-size:11px;">Infeed 22</button>
+      </div>
+      <button class="f-btn active" id="an-f-hoje"   onclick="window.setFiltroAnalise('hoje',this)"   style="padding:6px 14px;font-size:12px;">Hoje</button>
+      <button class="f-btn"        id="an-f-geral"  onclick="window.setFiltroAnalise('geral',this)"  style="padding:6px 14px;font-size:12px;">Geral</button>
+      <button class="f-btn"        id="an-f-periodo" onclick="window.togglePeriodoAnalise(this)"      style="padding:6px 14px;font-size:12px;">Período ▾</button>
+      <!-- Popover período -->
+      <div id="periodo-picker-an" style="display:none;position:absolute;top:calc(100% + 8px);right:0;z-index:300;background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:18px 20px;min-width:260px;" class="dark:bg-[#1e1e1e] dark:border-gray-700">
+        <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Dia específico</div>
+        <input type="date" id="an-dp-dia" style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;outline:none;margin-bottom:12px;box-sizing:border-box;" onchange="window.setPeriodoDiaAN()">
+        <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">Mês inteiro</div>
+        <div style="display:flex;gap:8px;">
+          <select id="an-dp-mes" style="flex:1;padding:8px 10px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;outline:none;" onchange="window.setPeriodoMesAN()">
+            <option value="">Mês</option>
+            <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+            <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+            <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+            <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+          </select>
+          <select id="an-dp-ano" style="width:90px;padding:8px 10px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;outline:none;" onchange="window.setPeriodoMesAN()"></select>
+        </div>
+        <button onclick="window.clearPeriodoAN()" style="margin-top:12px;width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;background:#f5f5f5;font-size:12px;font-family:inherit;cursor:pointer;color:#888;font-weight:600;">Limpar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-[1100px] mx-auto px-3 py-5" style="display:flex;flex-direction:column;gap:14px;">
+
+    <!-- Linha 1: Conformidade Geral (full width) -->
+    <div class="desemp-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+        <div>
+          <div class="desemp-card-title" style="margin-bottom:2px;">Conformidade Geral — Tendência</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:22px;font-weight:700;" class="dark:text-white" id="an-evol-val">—</span>
+            <span id="an-evol-badge" class="pm-evolution-badge"></span>
+          </div>
+        </div>
+        <button class="desemp-expand-btn bg-none border border-black/10 dark:border-white/10 rounded-lg w-7 h-7 text-[14px] cursor-pointer text-gray-400 dark:text-gray-500 flex items-center justify-center flex-shrink-0 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-gray-700 dark:hover:text-gray-300" onclick="window.openDesempModal('conformidade')" title="Ver detalhes">⤢</button>
+      </div>
+      <div style="height:200px;position:relative;"><canvas id="an-conformidade"></canvas></div>
+    </div>
+
+    <!-- Linha 2: PMs + Pareto -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="desemp-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div class="desemp-card-title" style="margin-bottom:0;">PMs com Mais Problemas</div>
+          <button class="desemp-expand-btn bg-none border border-black/10 dark:border-white/10 rounded-lg w-7 h-7 text-[14px] cursor-pointer text-gray-400 dark:text-gray-500 flex items-center justify-center flex-shrink-0 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-gray-700 dark:hover:text-gray-300" onclick="window.openDesempModal('pms')" title="Ver detalhes">⤢</button>
+        </div>
+        <div class="desemp-chart-wrap"><canvas id="an-problemas"></canvas></div>
+      </div>
+      <div class="desemp-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div class="desemp-card-title" style="margin-bottom:0;">Tipos de Defeito (Pareto)</div>
+          <button class="desemp-expand-btn bg-none border border-black/10 dark:border-white/10 rounded-lg w-7 h-7 text-[14px] cursor-pointer text-gray-400 dark:text-gray-500 flex items-center justify-center flex-shrink-0 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-gray-700 dark:hover:text-gray-300" onclick="window.openDesempModal('pareto')" title="Ver detalhes">⤢</button>
+        </div>
+        <div class="desemp-chart-wrap"><canvas id="an-pareto"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Linha 3: Parâmetros + Turnos -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <div class="desemp-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div class="desemp-card-title" style="margin-bottom:0;">Parâmetros com Mais Erros</div>
+          <button class="desemp-expand-btn bg-none border border-black/10 dark:border-white/10 rounded-lg w-7 h-7 text-[14px] cursor-pointer text-gray-400 dark:text-gray-500 flex items-center justify-center flex-shrink-0 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-gray-700 dark:hover:text-gray-300" onclick="window.openDesempModal('params')" title="Ver detalhes">⤢</button>
+        </div>
+        <div class="desemp-chart-wrap"><canvas id="an-params"></canvas></div>
+      </div>
+      <div class="desemp-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div class="desemp-card-title" style="margin-bottom:0;">Problemas por Turno (Início vs Final)</div>
+          <button class="desemp-expand-btn bg-none border border-black/10 dark:border-white/10 rounded-lg w-7 h-7 text-[14px] cursor-pointer text-gray-400 dark:text-gray-500 flex items-center justify-center flex-shrink-0 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-gray-700 dark:hover:text-gray-300" onclick="window.openDesempModal('turnos')" title="Ver detalhes">⤢</button>
+        </div>
+        <div class="desemp-chart-wrap"><canvas id="an-turnos"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Linha 4: Impressão (full width) -->
+    <div class="desemp-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div class="desemp-card-title" style="margin-bottom:0;">Impressão da Etiqueta por PM — % de Conformidade</div>
+        <button class="desemp-expand-btn bg-none border border-black/10 dark:border-white/10 rounded-lg w-7 h-7 text-[14px] cursor-pointer text-gray-400 dark:text-gray-500 flex items-center justify-center flex-shrink-0 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-gray-700 dark:hover:text-gray-300" onclick="window.openDesempModal('impressao')" title="Ver detalhes">⤢</button>
+      </div>
+      <div style="height:220px;position:relative;"><canvas id="an-impressao"></canvas></div>
+    </div>
+
+    <!-- Linha 5: Check de Itens (full width) -->
+    <div class="desemp-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div class="desemp-card-title" style="margin-bottom:0;">Check de Itens Irregulares</div>
+        <button class="desemp-expand-btn bg-none border border-black/10 dark:border-white/10 rounded-lg w-7 h-7 text-[14px] cursor-pointer text-gray-400 dark:text-gray-500 flex items-center justify-center flex-shrink-0 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-gray-700 dark:hover:text-gray-300" onclick="window.openDesempModal('checkitens')" title="Ver detalhes">⤢</button>
+      </div>
+      <div style="height:280px;position:relative;"><canvas id="an-check-itens"></canvas></div>
+    </div>
+
+    <!-- Linha 6: Histórico de Paradas (full width) -->
+    <div class="desemp-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div class="desemp-card-title" style="margin-bottom:0;">Histórico de Paradas por Máquina</div>
+        <button class="desemp-expand-btn bg-none border border-black/10 dark:border-white/10 rounded-lg w-7 h-7 text-[14px] cursor-pointer text-gray-400 dark:text-gray-500 flex items-center justify-center flex-shrink-0 transition-colors hover:bg-black/5 dark:hover:bg-white/[0.06] hover:text-gray-700 dark:hover:text-gray-300" onclick="window.openDesempModal('paradas')" title="Ver detalhes">⤢</button>
+      </div>
+      <div class="desemp-chart-wrap"><canvas id="d-paradas"></canvas></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DETALHE DESEMPENHO -->
+<div class="modal-overlay desemp-detail-modal fixed inset-0 bg-black/50 z-[1000] justify-center items-center p-5 backdrop-blur-sm" id="desemp-detail-modal">
+  <div class="modal-content bg-white dark:bg-[#1e1e1e] w-full max-w-[900px] rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.18)] overflow-hidden animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[92vh] transition-colors duration-300">
+    <div class="modal-header px-6 py-[18px] border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-[#fff159] dark:bg-[#1a1a1a] transition-colors duration-300">
+      <div class="modal-title text-[20px] font-bold text-gray-800 dark:text-gray-100" id="desemp-detail-title">Detalhes</div>
+      <button class="close-btn bg-none border-none text-[28px] text-gray-800 dark:text-gray-100 cursor-pointer px-[10px] leading-none" onclick="window.closeDesempModal()">&times;</button>
+    </div>
+    <div class="modal-body p-6 overflow-y-auto flex-grow">
+      <div id="desemp-detail-kpis" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
+      <div class="desemp-detail-chart-wrap"><canvas id="desemp-detail-chart"></canvas></div>
+      <div id="desemp-detail-list" style="margin-top:20px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MAQ COM PROBLEMAS -->
+<div class="modal-overlay fixed inset-0 bg-black/50 z-[1000] justify-center items-center p-5 backdrop-blur-sm" id="maq-prob-modal">
+  <div class="modal-content bg-white dark:bg-[#1e1e1e] w-full max-w-[480px] rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.18)] overflow-hidden animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[92vh] transition-colors duration-300">
+    <div class="modal-header px-6 py-[18px] border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-[#fff159] dark:bg-[#1a1a1a] transition-colors duration-300">
+      <div>
+        <div class="modal-title text-[20px] font-bold text-gray-800 dark:text-gray-100" id="maq-prob-title">Máquinas com Problemas</div>
+        <div style="font-size:12px;color:#888;margin-top:2px;" id="maq-prob-sub"></div>
+      </div>
+      <button class="close-btn bg-none border-none text-[28px] text-gray-800 dark:text-gray-100 cursor-pointer px-[10px] leading-none" onclick="window.closeMaqProblemasModal()">&times;</button>
+    </div>
+    <div class="modal-body overflow-y-auto flex-grow" style="padding:0;">
+      <div id="maq-prob-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay fixed inset-0 bg-black/50 z-[1000] justify-center items-center p-5 backdrop-blur-sm" id="details-modal">
+  <div class="modal-content bg-white dark:bg-[#1e1e1e] w-full max-w-[900px] rounded-2xl shadow-[0_16px_48px_rgba(0,0,0,0.18)] overflow-hidden animate-[slideUp_0.3s_ease-out] flex flex-col max-h-[92vh] transition-colors duration-300">
+    <div class="modal-header px-6 py-[18px] border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-[#fff159] dark:bg-[#1a1a1a] transition-colors duration-300">
+      <div class="modal-title text-[20px] font-bold text-gray-800 dark:text-gray-100" id="modal-pm-name">Detalhes</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div id="modal-pm-status" style="display:none;align-items:center;gap:7px;background:rgba(0,0,0,0.06);border-radius:20px;padding:5px 12px 5px 9px;">
+          <span id="modal-pm-status-dot" style="width:9px;height:9px;border-radius:50%;display:inline-block;flex-shrink:0;"></span>
+          <span id="modal-pm-status-label" style="font-size:12px;font-weight:700;letter-spacing:.02em;"></span>
+        </div>
+        <button class="close-btn bg-none border-none text-[28px] text-gray-800 dark:text-gray-100 cursor-pointer px-[10px] leading-none" onclick="window.closeModal()">&times;</button>
+      </div>
+    </div>
+    <div style="padding:12px 24px 0; border-bottom:1px solid rgba(0,0,0,0.06); display:flex; gap:8px; align-items:center; background:#fff; transition:background 0.3s;" id="modal-filter-bar">
+      <button class="f-btn active" id="mf-hoje" onclick="window.setModalFiltro('hoje',this)">Hoje</button>
+      <button class="f-btn" id="mf-geral" onclick="window.setModalFiltro('geral',this)">Geral</button>
+      <div style="position:relative;">
+        <button class="f-btn" id="mf-periodo" onclick="window.toggleModalPicker(this)">Escolher período ▾</button>
+        <div id="modal-periodo-picker" style="display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:300;background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:16px 18px;min-width:220px;">
+          <div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">Dia específico</div>
+          <input type="date" id="mf-dia" min="2020-01-01" max="2099-12-31" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid #ddd;font-size:13px;font-family:inherit;outline:none;box-sizing:border-box;" onchange="window.setModalFiltroDia()">
+        </div>
+      </div>
+    </div>
+    <div class="modal-body p-6 overflow-y-auto flex-grow">
+      <div id="modal-loading" class="text-center py-[30px] text-gray-400 text-sm italic">Processando histórico...</div>
+      <div id="modal-content-body" style="display:none;">
+        <!-- HISTÓRICO DE PARADAS -->
+        <div id="modal-paradas-card" class="chart-card-modal-full bg-white dark:bg-[#111] rounded-2xl border border-black/[0.07] dark:border-white/[0.06] shadow-sm p-5 mb-5 transition-colors duration-300">
+          <div class="chart-title text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[.05em] mb-[14px]">Histórico de Paradas</div>
+          <div id="modal-paradas-body"></div>
+        </div>
+        <div class="chart-card-modal-full bg-white dark:bg-[#111] rounded-2xl border border-black/[0.07] dark:border-white/[0.06] shadow-sm p-5 mb-5 transition-colors duration-300">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+            <div class="chart-title text-[11px] font-bold text-gray-400 dark:text-[#555] uppercase tracking-[.05em]" style="margin-bottom:0;">Comparação Mensal</div>
+            <div style="position:relative;">
+              <button class="f-btn" id="modal-mes-btn" onclick="window.toggleModalMesPicker(this)" style="font-size:11px;padding:4px 12px;">Todos os meses ▾</button>
+              <div id="modal-mes-picker" style="display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:300;background:#fff;border:1px solid #ddd;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,0.12);padding:8px;min-width:160px;max-height:240px;overflow-y:auto;"></div>
+            </div>
+          </div>
+          <div style="height:280px;position:relative;"><canvas id="modal-mensal-chart"></canvas></div>
+        </div>
+        <div class="chart-card-modal-full bg-white dark:bg-[#111] rounded-2xl border border-black/[0.07] dark:border-white/[0.06] shadow-sm p-5 mb-5 transition-colors duration-300">
+          <div class="chart-title text-[11px] font-bold text-gray-400 dark:text-[#555] uppercase tracking-[.05em] mb-[14px]">Histórico de Conformidade (Últimos 30 dias com dados)</div>
+          <div class="line-chart-container"><canvas id="lineChartCanvas"></canvas></div>
+        </div>
+        <div class="grid grid-cols-2 gap-5 mb-6">
+          <div class="chart-card-modal bg-white dark:bg-[#111] rounded-2xl border border-black/[0.07] dark:border-white/[0.06] shadow-sm p-5 transition-colors duration-300">
+            <div class="chart-title text-[11px] font-bold text-gray-400 dark:text-[#555] uppercase tracking-[.05em] mb-[14px]">Distribuição de Defeitos</div>
+            <div class="doughnut-chart-container"><canvas id="doughnutChartCanvas"></canvas></div>
+          </div>
+          <div class="chart-card-modal bg-white dark:bg-[#111] rounded-2xl border border-black/[0.07] dark:border-white/[0.06] shadow-sm p-5 transition-colors duration-300">
+            <div class="chart-title text-[11px] font-bold text-gray-400 dark:text-[#555] uppercase tracking-[.05em] mb-[14px]">Parametrizações mais ajustadas</div>
+            <div class="details-list-container max-h-[220px] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-[#181818]" id="modal-param-ranking"></div>
+          </div>
+        </div>
+        <div class="chart-card-modal-full bg-white dark:bg-[#111] rounded-2xl border border-black/[0.07] dark:border-white/[0.06] shadow-sm p-5 transition-colors duration-300" style="margin-bottom:0;">
+          <div class="chart-title text-[11px] font-bold text-gray-400 dark:text-[#555] uppercase tracking-[.05em] mb-[14px]">Últimas Ocorrências Detalhadas</div>
+          <div class="details-list-container max-h-[260px] overflow-y-auto border border-gray-100 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-[#181818]" id="modal-details-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="java.jss"></script>
+</body>
+</html>
