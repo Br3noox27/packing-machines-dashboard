@@ -1,3 +1,96 @@
+# Packing Machines Dashboard
+
+> Sistema web de monitoramento em tempo real das inspeções preventivas 
+> de máquinas de embalagem (Packing Machines). Construído pra resolver 
+> uma dor real da operação e implantado na linha de produção de um 
+> centro de distribuição do Mercado Livre.
+
+![Status](https://img.shields.io/badge/status-em_produção-success)
+![Frontend](https://img.shields.io/badge/frontend-HTML%20%7C%20CSS%20%7C%20JS-yellow)
+![Backend](https://img.shields.io/badge/backend-Google_Apps_Script-blue)
+![Charts](https://img.shields.io/badge/charts-Chart.js-ff6384)
+
+<p align="center">
+  <img src="docs/screenshots/demo.gif" alt="Dashboard em funcionamento" width="900">
+</p>
+
+---
+
+## 📍 Contexto
+
+Construído durante meu trabalho como terceirizado na equipe de manutenção 
+de um centro de distribuição do Mercado Livre.
+
+O líder pediu uma planilha pra organizar as inspeções de máquinas. 
+Fui além do pedido: transformei a planilha num sistema web completo 
+de monitoramento em tempo real — ponta a ponta, sozinho, em ~2 semanas.
+
+**Em uso diário pela equipe de manutenção desde março/2026.**
+
+---
+
+## 📊 Impacto
+
+- 🏭 **12 máquinas de embalagem** monitoradas em tempo real
+- 👥 Utilizado em **todos os 4 turnos** da operação
+- 📝 **~24 inspeções/dia** em média, 2 por máquina por turno (início + final)
+- 📈 **77% de conformidade geral** mantida (meta: 70%)
+- 📧 Relatório automático por email toda **segunda-feira** para supervisores 
+  e líderes
+- 🔍 Identificação imediata de máquinas problemáticas: antes dependia 
+  de compilação manual, hoje é visível em tempo real
+- 🛠 Permite **manutenção preventiva estruturada** ao invés de corretiva 
+  reativa — parâmetros fora de padrão são detectados antes de virarem 
+  parada de máquina
+- 💰 **Zero custo de licença** (substituiu a necessidade de CMMS pago)
+
+---
+
+## 🎬 Demonstração
+
+### Tela principal — PMs (light mode)
+![Dashboard PMs](docs/screenshots/02-dashboard-desempenho-light.png)
+
+### Aba de Desempenho — análises históricas
+![Desempenho](docs/screenshots/08-dashboard-desempenho-light.png)
+
+### Máquinas críticas — detalhamento de BOs
+
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Máquinas com BO](docs/screenshots/03-maquinas-criticas.png) | ![Máquinas com BO - Dark](docs/screenshots/graficblack.png) |
+
+### Modal de detalhes por máquina
+![Modal](docs/screenshots/04-modal-maquinas-problemas.png)
+
+### Modo escuro — otimizado para ambiente industrial
+
+| Light Mode | Dark Mode |
+|------------|-----------|
+| ![Light](docs/screenshots/02-dashboard-desempenho-light.png) | ![Dark](docs/screenshots/modoblack.png) |
+
+---
+
+## 🧩 O problema
+
+A operação tinha **12 máquinas de embalagem** rodando em **4 turnos**, 
+sem nenhum sistema digital de controle de manutenção preventiva.
+
+Sintomas do problema antes do sistema:
+
+- Não havia visibilidade de quais máquinas estavam operando fora de parâmetro
+- Alterações de configuração feitas em uma máquina por um turno não eram 
+  registradas — e o turno seguinte não sabia o que tinha mudado
+- Supervisores não tinham dados pra justificar solicitações de manutenção 
+  ou troca de peça
+- A manutenção era 100% reativa: só olhavam pra máquina quando ela quebrava
+
+---
+
+## 💡 A solução
+
+Dashboard web conectado a um fluxo de dados automático:
+
 1. Técnico de manutenção abre o **Google Forms** no celular no início 
    e no final do turno
 2. Registra o status de cada parâmetro da máquina (temperatura de selagem, 
@@ -13,9 +106,7 @@
 
 ## 🏗 Arquitetura
 
-<p align="center">
-  <img src="docs/screenshots/architecture-diagram.png" alt="Arquitetura" width="700">
-</p>
+**Fluxo de dados:** Google Forms → Google Sheets → Apps Script → Dashboard Web
 
 **Frontend:** HTML + CSS + JavaScript puro + Chart.js + Tailwind CSS  
 **Backend:** Google Apps Script (serverless, zero infra)  
